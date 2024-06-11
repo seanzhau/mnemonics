@@ -12,6 +12,15 @@ This program allowed you use custom words to create mnemonics, Custom keywords m
 - Max custom keywords: 23 custom words (Not recommended).
 - Safe to use, Save your mnemonics offline.
 
+## How to run the code?
+
+```
+% python3 --version
+Python 3.11.7
+
+% pip3 install hdwallet eth_keys bitcoin-utils mnemonic
+```
+
 ## Example
 ```bash
 % python3.11 generate_mnemonic.py
