@@ -10,7 +10,7 @@ from bitcoinutils.script import Script
 from bitcoinutils.keys import P2wshAddress, P2shAddress, PrivateKey, PublicKey
 
 def generate_custom_english_mnemonic():
-    custom_keywords = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon"
+    custom_keywords = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon"
   
     english_mnemonic = Mnemonic('english')
     english_wordlist = english_mnemonic.wordlist
@@ -42,45 +42,45 @@ def generate_custom_english_mnemonic():
   
 def generate_address():
     setup("mainnet")
-    while True:
-        en_phrase, indices = generate_custom_english_mnemonic()
+    en_phrase, indices = generate_custom_english_mnemonic()
 
-        hdw_btc = HDWallet(symbol = BTC)
-        hdw_btc.from_mnemonic(mnemonic = en_phrase)
-        hdw_btc.from_index(44, hardened=True)
-        hdw_btc.from_index(0, hardened=True)
-        hdw_btc.from_index(0, hardened=True)
-        hdw_btc.from_index(0)
-        hdw_btc.from_index(0)
+    hdw_btc = HDWallet(symbol = BTC)
+    hdw_btc.from_mnemonic(mnemonic = en_phrase)
+    hdw_btc.from_index(44, hardened=True)
+    hdw_btc.from_index(0, hardened=True)
+    hdw_btc.from_index(0, hardened=True)
+    hdw_btc.from_index(0)
+    hdw_btc.from_index(0)
 
-        wif = hdw_btc.wif()
-        private_key = PrivateKey(secret_exponent=int(hdw_btc.private_key(), 16))
-        public_Key = private_key.get_public_key()
+    wif = hdw_btc.wif()
+    private_key = PrivateKey(secret_exponent=int(hdw_btc.private_key(), 16))
+    public_Key = private_key.get_public_key()
 
-        taproot_address = public_Key.get_taproot_address()
-        legacy_address = public_Key.get_address()
-        native_address = public_Key.get_segwit_address()
-        segwit_key = (
-            public_Key
-            .get_segwit_address()
-        )
-        nested_address = P2shAddress.from_script(segwit_key.to_script_pub_key())
+    taproot_address = public_Key.get_taproot_address()
+    legacy_address = public_Key.get_address()
+    native_address = public_Key.get_segwit_address()
+    segwit_key = (
+        public_Key
+        .get_segwit_address()
+    )
+    nested_address = P2shAddress.from_script(segwit_key.to_script_pub_key())
 
-        private_key = keys.PrivateKey(bytes.fromhex(hdw_btc.private_key()))
-        public_key = private_key.public_key
-        eth_address = public_key.to_checksum_address().lower()
-      
-        print('-' * 100)
-        print('en_phrase:', en_phrase)
-        print('indices:', indices)
-        print('hex:', private_key)
-        print('wif:', wif)
-        print('Taproot:', taproot_address.to_string())
-        print('Legacy:', legacy_address.to_string())
-        print('Native:', native_address.to_string())
-        print('Nested:', nested_address.to_string())
-        print('ETH:', eth_address)
+    private_key = keys.PrivateKey(bytes.fromhex(hdw_btc.private_key()))
+    public_key = private_key.public_key
+    eth_address = public_key.to_checksum_address().lower()
+
+    print('-' * 100)
+    print('en_phrase:', en_phrase)
+    print('indices:', indices)
+    print('hex:', private_key)
+    print('wif:', wif)
+    print('Taproot:', taproot_address.to_string())
+    print('Legacy:', legacy_address.to_string())
+    print('Native:', native_address.to_string())
+    print('Nested:', nested_address.to_string())
+    print('ETH:', eth_address)
 
 if __name__ == '__main__':
     generate_address()
-  
+
+
