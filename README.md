@@ -1,4 +1,4 @@
-# Breadcrumbsgenerate_mnemonic_by_custom_words
+# Generate mnemonic by your custom words
 
 This program allowed you use custom words to create mnemonics, Custom keywords must be in [Bip39](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt).
 
