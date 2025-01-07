@@ -1,15 +1,16 @@
 import os
 import hashlib
+import multiprocessing
 from mnemonic import Mnemonic
 from hdwallet.utils import is_mnemonic
 from hdwallet import HDWallet
-from hdwallet.symbols import BTC
-from eth_keys import keys
+from hdwallet.symbols import BTC, ETH
+from eth_hash.auto import keccak
 from bitcoinutils.setup import setup
 from bitcoinutils.script import Script
 from bitcoinutils.keys import P2wshAddress, P2shAddress, PrivateKey, PublicKey
 
-def generate_custom_english_mnemonic():
+def generate_custom_mnemonic():
     custom_keywords = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon"
   
     english_mnemonic = Mnemonic('english')
@@ -37,43 +38,73 @@ def generate_custom_english_mnemonic():
     english_words = [english_wordlist[index] for index in mnemonic_indices]
     english_mnemonic = ' '.join(english_words)
 
-    if is_mnemonic(mnemonic=english_mnemonic):
-        return english_mnemonic, mnemonic_indices
-  
-def generate_address():
-    setup("mainnet")
-    en_phrase, indices = generate_custom_english_mnemonic()
+    # if is_mnemonic(mnemonic=english_mnemonic):
+    return english_mnemonic, mnemonic_indices
 
+# 生成地址
+def generate_taproot_address(mnemonic):
     hdw_btc = HDWallet(symbol = BTC)
-    hdw_btc.from_mnemonic(mnemonic = en_phrase)
-    hdw_btc.from_index(44, hardened=True)
-    hdw_btc.from_index(0, hardened=True)
-    hdw_btc.from_index(0, hardened=True)
-    hdw_btc.from_index(0)
-    hdw_btc.from_index(0)
-
-    wif = hdw_btc.wif()
+    hdw_btc.from_mnemonic(mnemonic = mnemonic)
+    hdw_btc.from_path(path="m/86'/0'/0'/0/0")
     private_key = PrivateKey(secret_exponent=int(hdw_btc.private_key(), 16))
     public_Key = private_key.get_public_key()
-
     taproot_address = public_Key.get_taproot_address()
-    legacy_address = public_Key.get_address()
-    native_address = public_Key.get_segwit_address()
+    return taproot_address.to_string()
+
+def generate_legacy_address(mnemonic):
+    hdw_btc = HDWallet(symbol = BTC)
+    hdw_btc.from_mnemonic(mnemonic = mnemonic)
+    hdw_btc.from_path(path="m/44'/0'/0'/0/0")
+    private_key = PrivateKey(secret_exponent=int(hdw_btc.private_key(), 16))
+    public_Key = private_key.get_public_key()
+    legacy_address = public_Key.get_address(compressed=True)
+    return legacy_address.to_string()
+
+def generate_nested_address(mnemonic):
+    hdw_btc = HDWallet(symbol = BTC)
+    hdw_btc.from_mnemonic(mnemonic = mnemonic)
+    hdw_btc.from_path(path="m/49'/0'/0'/0/0")
+    private_key = PrivateKey(secret_exponent=int(hdw_btc.private_key(), 16))
+    public_Key = private_key.get_public_key()
     segwit_key = (
         public_Key
         .get_segwit_address()
     )
     nested_address = P2shAddress.from_script(segwit_key.to_script_pub_key())
+    return nested_address.to_string()
 
-    private_key = keys.PrivateKey(bytes.fromhex(hdw_btc.private_key()))
-    public_key = private_key.public_key
-    eth_address = public_key.to_checksum_address().lower()
+def generate_native_address(mnemonic):
+    hdw_btc = HDWallet(symbol = BTC)
+    hdw_btc.from_mnemonic(mnemonic = mnemonic)
+    hdw_btc.from_path(path="m/84'/0'/0'/0/0")
+    private_key = PrivateKey(secret_exponent=int(hdw_btc.private_key(), 16))
+    public_Key = private_key.get_public_key()
+    native_address = public_Key.get_segwit_address()
+    return native_address.to_string()
+
+def generate_eth_address(mnemonic):
+    hdw_eth = HDWallet(symbol = ETH)
+    hdw_eth.from_mnemonic(mnemonic = mnemonic)
+    hdw_eth.from_path(path="m/44'/60'/0'/0/0")
+    private_key = PrivateKey(secret_exponent=int(hdw_eth.private_key(), 16))
+    public_Key = private_key.get_public_key()
+    uncompressed_pubkey = bytes.fromhex(public_Key.to_hex(compressed=True))
+    keccak_hash = keccak(uncompressed_pubkey[1:])
+    return '0x' + keccak_hash.hex()[-40:]
+  
+def generate_address():
+    setup("mainnet")
+    en_phrase, indices = generate_custom_mnemonic()
+
+    taproot_address = generate_taproot_address(en_phrase)
+    legacy_address = generate_legacy_address(en_phrase)
+    native_address = generate_native_address(en_phrase)
+    nested_address = generate_nested_address(en_phrase)
+    eth_address = generate_eth_address(en_phrase)
 
     print('-' * 100)
     print('en_phrase:', en_phrase)
     print('indices:', indices)
-    print('hex:', private_key)
-    print('wif:', wif)
     print('Taproot:', taproot_address.to_string())
     print('Legacy:', legacy_address.to_string())
     print('Native:', native_address.to_string())
